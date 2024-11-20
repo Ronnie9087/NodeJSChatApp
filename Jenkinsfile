@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     environment {
-        // Define your GitHub repository URL here
-        GIT_REPO_URL = 'https://github.com/Ronnie9087/NodeJSChatApp.git'  // Change this to your repo's URL
-        // GIT_REPO_URL = 'git@github.com:Ronnie9087/NodeJSChatApp.git'  // Uncomment this for SSH usage
+        // GitHub repository URL
+        GIT_REPO_URL = 'https://github.com/Ronnie9087/NodeJSChatApp.git' // Update as needed
 
-        // Optionally, set up proxy settings (if behind a proxy)
-        GIT_PROXY = 'http://proxy.example.com:8080'  // Uncomment and set this if needed
+        // Jenkins credentials ID for GitHub
+        GIT_CREDENTIALS_ID = 'your-credential-id' // Replace with the actual credential ID
     }
 
     stages {
@@ -15,23 +14,11 @@ pipeline {
             steps {
                 script {
                     try {
-                        // If using HTTPS, use credentialsId for GitHub authentication
-                        // Make sure to configure the credentials in Jenkins (GitHub token or username/password)
-                        if (GIT_REPO_URL.startsWith('https://')) {
-                            // Set proxy if necessary
-                            if (env.GIT_PROXY) {
-                                sh 'git config --global http.proxy $GIT_PROXY'
-                                sh 'git config --global https.proxy $GIT_PROXY'
-                            }
-                            git url: "${env.GIT_REPO_URL}", credentialsId: 'your-credential-id'  // Replace with your credential ID
-                        }
-                        // If using SSH, ensure you have the SSH keys set up in Jenkins credentials
-                        else if (GIT_REPO_URL.startsWith('git@github.com:')) {
-                            git url: "${env.GIT_REPO_URL}", credentialsId: 'your-ssh-credential-id'  // Replace with SSH credential ID
-                        }
+                        echo "Checking out from ${GIT_REPO_URL}"
+                        git url: GIT_REPO_URL, credentialsId: GIT_CREDENTIALS_ID
                     } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
                         echo "Git checkout failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
                         throw e
                     }
                 }
@@ -40,38 +27,38 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building..'
-                // Add your build steps here (e.g., npm install, Maven build, etc.)
+                echo 'Installing dependencies...'
+                sh 'npm install'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Testing..'
-                // Add your test steps here (e.g., npm test, JUnit tests, etc.)
+                echo 'Running tests...'
+                sh 'npm test'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying....'
-                // Add your deploy steps here (e.g., deploy to AWS, Azure, etc.)
+                echo 'Deploying application...'
+                // Add deployment steps here
             }
         }
     }
 
     post {
         always {
-            echo 'Cleaning up..'
-            // Add cleanup steps here if necessary
+            echo 'Cleaning up workspace...'
+            cleanWs() // Clean workspace after build
         }
 
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Pipeline completed successfully!'
         }
 
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed. Please check logs.'
         }
     }
 }
