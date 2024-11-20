@@ -1,29 +1,28 @@
 pipeline {
-    agent any
+    agent any // This allows Jenkins to run the pipeline on any available agent.
+
     stages {
-        stage('Checkout') {
+        stage('Build') {
             steps {
-                git branch: 'main', url: 'https://github.com/Ronnie9087/NodeJSChatApp.git'
+                echo 'Building..'
+                // Add your build steps here
+                // For example, compile code or create artifacts
             }
         }
-        stage('Install Dependencies') {
+        
+        stage('Test') {
             steps {
-                sh 'npm install'
+                echo 'Testing..'
+                // Add your test steps here
+                // For example, run unit tests or integration tests
             }
         }
-        stage('Snyk SCA and SAST') {
+        
+        stage('Deploy') {
             steps {
-                sh 'snyk test'
-            }
-        }
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t nodejs-chat-app .'
-            }
-        }
-        stage('Run Application') {
-            steps {
-                sh 'docker-compose up -d'
+                echo 'Deploying....'
+                // Add your deployment steps here
+                // For example, deploy to an environment
             }
         }
     }
